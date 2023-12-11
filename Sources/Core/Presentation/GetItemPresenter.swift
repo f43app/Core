@@ -8,6 +8,15 @@
 import SwiftUI
 import Combine
 
+public struct Noted {
+    var tstamp: Double
+    var note: String
+    public init(tstamp: Double, note: String) {
+        self.tstamp = tstamp
+        self.note = note
+    }
+}
+
 public class GetItemPresenter<Request, Response, Interactor: UseCase>: ObservableObject
 where Interactor.Request == Request, Interactor.Response == Response {
 
@@ -22,6 +31,8 @@ where Interactor.Request == Request, Interactor.Response == Response {
     @Published public var inFaved: Bool = false
     @Published public var theNote: String = ""
     @Published public var wasNoted: Bool = false
+    @Published public var theNoted: Noted = Noted(tstamp: 0.0, note: "")
+    @Published public var timeStamp: Double = 0.0
 
     public init(useCase: Interactor) {
         _useCase = useCase
@@ -65,6 +76,29 @@ where Interactor.Request == Request, Interactor.Response == Response {
                 self.item = value
             })
             .store(in: &cancellables)
+    }
+    
+    public func noted(_ id: Int) {
+        _useCase.noted(id: id)
+            .receive(on: RunLoop.main)
+            .sink(receiveCompletion: { completion in
+                switch completion {
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    self.isError = true
+                    self.isLoading = false
+                case .finished:
+                    self.isLoading = false
+                }
+
+            }, receiveValue: { value in
+                self.theNote = value.note
+                self.timeStamp = value.tstamp
+                // self.inFaved = value.tstamp > 0
+                // print("getNoted for id=\(id) is='\(self.theNote)' ts=\(self.timeStamp) inFaved=\(self.inFaved)")
+            })
+            .store(in: &cancellables)
+
     }
 
     public func check(_ id: Int) {

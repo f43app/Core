@@ -23,6 +23,10 @@ where R.Request == Request, R.Response == Response {
     public func put(id: Int) -> AnyPublisher<Response, Error> {
         _repository.put(id: id)
     }
+    
+    public func noted(id: Int) -> AnyPublisher<Noted, Error> {
+        _repository.noted(id: id)
+    }
 
     public func check(id: Int) -> AnyPublisher<Bool, Error> {
         _repository.check(id: id)
